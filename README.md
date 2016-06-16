@@ -10,6 +10,8 @@ The objectives are:
 - Be able to update and schedule updates of those objects
 - Allow other software (for example, audio user interfaces) to discover properties and capabilities of generated nodes
 
+You can see the [Live Examples](https://danigb.github.io/web-audio-assembler)
+
 ## How-to
 
 The idea it's old and popular: instead of use the API, create an object with the description of what you want and let web-audio-assembler to do the work.
