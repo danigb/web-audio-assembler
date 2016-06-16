@@ -1,0 +1,31 @@
+{
+  "name": "web-audio-assembler",
+  "version": "0.0.0",
+  "description": "Assemble web audio components",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danigb/web-audio-assembler.git"
+  },
+  "keywords": [
+    "web",
+    "audio",
+    "api",
+    "assembler",
+    "node",
+    "declarative"
+  ],
+  "author": "danigb",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/danigb/web-audio-assembler/issues"
+  },
+  "homepage": "https://github.com/danigb/web-audio-assembler#readme",
+  "devDependencies": {
+    "tape": "^4.5.1",
+    "web-audio-test-api": "^0.5.2"
+  }
+}
