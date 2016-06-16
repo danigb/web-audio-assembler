@@ -21,9 +21,9 @@ The idea it's old and popular: instead of use the API, create an object with the
 
 ```js
 var ac = new AudioContext()
-var waa = require('web-audio-assembler')
+var waas = require('web-audio-assembler')
 
-var Osc = was.assemble({
+var Osc = waas.assemble({
   node: 'oscillator',
   type: 'sine',
   frequency: 400
@@ -34,7 +34,7 @@ Osc(ac).start()
 **Create more complex node graphs**
 
 ```js
-var Synth = was.assemble({
+var Synth = waas.assemble({
   name: 'microsynth',
   amp: {
     node: 'gain'
@@ -59,7 +59,7 @@ synth.osc.start(ac.currentTime)
 ### Schedule updates
 
 ```js
-was.schedule(synth, [
+waas.schedule(synth, [
   { type: 'start', name: 'osc', time: 0 },
   { type: 'value', name: 'filter.frequency', value: 400, time: 1 }
 ])
