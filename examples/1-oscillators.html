@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Create oscillatores - Web Audio Assembler</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="initial-scale=1., user-scalable=no, width=device-width"/></head>
+  <link rel="stylesheet" href="assets/ss.css"/>
+<body>
+  <div class="main">
+    <h3>Web Audio Assembler Examples</h3>
+    <h1>1. Create oscillators</h1>
+
+		<pre><code>
+var ac = new AudioContext()
+var Osc = Assembler.assemble({
+	node: 'oscillator',
+	connect: true
+})
+var osc = Osc(ac)
+osc.start()
+		</code></pre>
+
+		<canvas nx="toggle"></canvas>
+		<canvas width="500" nx="position"></canvas>
+  </div>
+  <script type="text/javascript" src="assets/nexusUI.js"></script>
+  <script type="text/javascript" src="assets/assembler.js"></script>
+  <script>
+		var ac = new AudioContext()
+		var Osc = Assembler.assemble({
+			node: 'oscillator',
+			connect: true
+		})
+		var osc = null
+
+		nx.onload = function () {
+			toggle1.on('*', function (e) {
+				if (e.value) {
+					osc = Osc(ac)
+					osc.start()
+				} else {
+					osc && osc.stop()
+				}
+			})
+		}
+  </script>
+</body>
+</html>

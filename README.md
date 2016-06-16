@@ -20,20 +20,21 @@ The idea it's old and popular: instead of use the API, create an object with the
 **Create simple nodes**
 
 ```js
-var waa = require('web-audio-assembler')
 var ac = new AudioContext()
+var waa = require('web-audio-assembler')
 
-var node = was.assemble(ac, {
+var Osc = was.assemble({
   node: 'oscillator',
   type: 'sine',
   frequency: 400
 })
+Osc(ac).start()
 ```
 
 **Create more complex node graphs**
 
 ```js
-var synth = was.assemble(ac, {
+var Synth = was.assemble({
   name: 'microsynth',
   amp: {
     node: 'gain'
@@ -50,6 +51,7 @@ var synth = was.assemble(ac, {
     connectTo: 'filter'
   }
 })
+var synth = Synth(ac)
 synth.amp.connect(ac.destination)
 synth.osc.start(ac.currentTime)
 ```
@@ -67,7 +69,8 @@ was.schedule(synth, [
 
 - Web Audio API, of course: https://www.w3.org/TR/webaudio/
 - clojure.spec (I'm thinking in a kind of spec of web audio)
-
+- A standardized framework for building and including Web Audio API instrument/effect "patches": https://github.com/h5bp/lazyweb-requests/issues/82
+- Flocking uses a similar idea to build synths: https://github.com/colinbdclark/flocking
 
 ## License
 
