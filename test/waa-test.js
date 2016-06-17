@@ -21,6 +21,20 @@ test('create oscillators', function (t) {
   t.end()
 })
 
+test('create filter', function (t) {
+  var ac = new AudioContext()
+  var node = Assembler.assemble({ node: 'BiquadFilter', frequency: 400 })(ac)
+  t.equal(node.frequency.value, 400)
+  t.end()
+})
+
+test('create delay node', function (t) {
+  var ac = new AudioContext()
+  var node = Assembler.assemble({ node: 'Delay', delayTime: 0.5 })(ac)
+  t.equal(node.delayTime.value, 0.5)
+  t.end()
+})
+
 test('connect to audio context', function (t) {
   var ac = new AudioContext()
   Assembler.assemble({ node: 'Oscillator', connect: '$context' })(ac)
@@ -29,7 +43,26 @@ test('connect to audio context', function (t) {
   t.end()
 })
 
-test('connections', function (t) {
+test('connect params', function (t) {
+  var ac = new AudioContext()
+  var Synth = Assembler.assemble({
+    vca: { node: 'Gain', connect: '$context' },
+    lfo: { node: 'Oscillator', frequency: 10, connect: 'vca.gain' }
+  })
+  var synth = Synth(ac)
+  t.ok(synth)
+  var dest = ac.toJSON()
+  t.equal(dest.name, 'AudioDestinationNode')
+  var gain = dest.inputs[0]
+  t.assert(gain)
+  t.equal(gain.name, 'GainNode')
+  var lfo = gain.gain.inputs[0]
+  t.assert(lfo)
+  t.equal(lfo.name, 'OscillatorNode')
+  t.end()
+})
+
+test('connect nodes', function (t) {
   var Synth = Assembler.assemble({
     name: 'simple-synth',
     amp: { node: 'Gain', connect: '$context' },

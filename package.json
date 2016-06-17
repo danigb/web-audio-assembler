@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "hi-typeof": "^1.0.0",
-    "map-values": "^1.0.1"
+    "map-values": "^1.0.1",
+    "object-path-get": "0.0.3"
   }
 }

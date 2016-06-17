@@ -1,25 +1,23 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>Simple synth - Web Audio Assembler</title>
+	<title>Modulation - Web Audio Assembler</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta name="viewport" content="initial-scale=1., user-scalable=no, width=device-width"/></head>
   <link rel="stylesheet" href="assets/ss.css"/>
 <body>
   <div class="main">
     <h3>Web Audio Assembler Examples</h3>
-    <h1>3. Use schedule to change notes</h1>
+    <h1>5. Vibrato</h1>
 
 		<pre><code>
-		var Synth = Assembler.assemble({
-			name: 'simple-synth',
-			amp: { node: 'Gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
-			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
-			osc: { node: 'Oscillator', frequency: 880, connect: 'filter' }
-		})
-		Assembler.schedule(Synth(ac), ac.currentTime,
-			[	{ target: 'osc.frequency', value: freq },
-				{ target: 'osc', trigger: 'start' }])
+var Synth = Assembler.assemble({
+	amp: { node: 'Gain', gain: 0.4, connect: '$context' },
+	filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
+	osc: { node: 'Oscillator', type: 'sawtooth', frequency: 880, connect: 'filter' },
+	lfoGain: { node: 'Gain', gain: 10, connect: 'osc.frequency' },
+	lfo: { node: 'Oscillator', frequency: 4, connect: 'lfoGain' }
+})
 		</code></pre>
 
 		<canvas nx="keyboard"></canvas>
@@ -27,28 +25,30 @@
   <script type="text/javascript" src="assets/nexusUI.js"></script>
   <script type="text/javascript" src="assets/assembler.js"></script>
   <script>
-		var ac = new AudioContext()
 		var Synth = Assembler.assemble({
-			name: 'simple-synth',
-			amp: { node: 'Gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
+			amp: { node: 'Gain', gain: 0.4, connect: '$context' },
 			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
-			osc: { node: 'Oscillator', frequency: 880, connect: 'filter' }
+			osc: { node: 'Oscillator', type: 'sawtooth', frequency: 880, connect: 'filter' },
+			lfoGain: { node: 'Gain', gain: 10, connect: 'osc.frequency' },
+			lfo: { node: 'Oscillator', frequency: 4, connect: 'lfoGain' }
 		})
 
 		nx.onload = function () {
 			var notes = {}
 			var current
+			var ac = new AudioContext()
+			Synth(ac).lfo.start()
 			keyboard1.on('*', function (e) {
 				if (e.on) {
 					current = notes[e.note] = Synth(ac)
 					var freq = Math.pow(2, (e.note - 69) / 12) * 440
-					Assembler.schedule(current, ac.currentTime,
-						[	{ target: 'osc.frequency', value: freq },
-							{ target: 'osc', trigger: 'start' }])
+					current.osc.frequency.value = freq
+					current.lfo.start()
+					current.osc.start()
 				} else {
 					current = notes[e.note]
-					Assembler.schedule(current, ac.currentTime,
-						[{ target: 'osc', trigger: 'stop' }])
+					current.osc.stop()
+					current.lfo.stop()
 				}
 			})
 		}
