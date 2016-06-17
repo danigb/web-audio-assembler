@@ -12,13 +12,12 @@
 
 		<pre><code>
 		var Synth = Assembler.assemble({
-			name: 'simple-synth',
 			amp: { node: 'Gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
 			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
 			osc: { node: 'Oscillator', frequency: 880, connect: 'filter' }
 		})
 		Assembler.schedule(Synth(ac), ac.currentTime,
-			[	{ target: 'osc.frequency', value: freq },
+			[	{ target: 'osc.frequency', value: 880 },
 				{ target: 'osc', trigger: 'start' }])
 		</code></pre>
 
@@ -29,7 +28,6 @@
   <script>
 		var ac = new AudioContext()
 		var Synth = Assembler.assemble({
-			name: 'simple-synth',
 			amp: { node: 'Gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
 			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
 			osc: { node: 'Oscillator', frequency: 880, connect: 'filter' }

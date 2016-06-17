@@ -36,7 +36,7 @@ or the node graph if AudioContext is provided
 ```js
 var Assembler = require('web-audio-assembler')
 // create a node generator function
- + var osc = Assembler.assemble({ node: 'Oscillator' })
+var osc = Assembler.assemble({ node: 'Oscillator' })
 var ac = new AudioContext()
 osc(ac).start()
 // create the node directly
@@ -55,6 +55,15 @@ Schedule update events.
 | when | <code>Float</code> | the time to start the schedule |
 | events | <code>Array</code> | the list of events |
 
+**Example**  
+```js
+Assembler.schedule(graph, ac.currentTime, [
+	{ target: 'osc.frequency', value: 440, time: 0 },
+ { target: 'osc', trigger: 'start', time: 0 },
+	{ target: 'osc.frequency', value: 880, time: 0.5 },
+ { target: 'osc', trigger: 'stop', time: 1 }
+])
+```
 <a name="start"></a>
 
 ## start(graph, when)
