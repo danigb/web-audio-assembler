@@ -1,23 +1,24 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>Create oscillatores - Web Audio Assembler</title>
+	<title>Simple synth - Web Audio Assembler</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta name="viewport" content="initial-scale=1., user-scalable=no, width=device-width"/></head>
   <link rel="stylesheet" href="assets/ss.css"/>
 <body>
   <div class="main">
     <h3>Web Audio Assembler Examples</h3>
-    <h1>1. Create oscillators</h1>
+    <h1>2. Create simple synth</h1>
 
 		<pre><code>
 var ac = new AudioContext()
-var Osc = Assembler.assemble({
-	node: 'oscillator',
-	connect: true
+var Synth = Assembler.assemble({
+	name: 'simple-synth',
+	amp: { node: 'gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
+	filter: { node: 'filter', type: 'lowpass', frequency: 400, connect: 'amp' },
+	osc: { node: 'oscillator', connect: 'filter' }
 })
-var osc = Osc(ac)
-osc.start()
+Synth(ac).osc.start()
 		</code></pre>
 
 		<canvas nx="toggle"></canvas>
@@ -26,19 +27,21 @@ osc.start()
   <script type="text/javascript" src="assets/assembler.js"></script>
   <script>
 		var ac = new AudioContext()
-		var Osc = Assembler.assemble({
-			node: 'oscillator',
-			connect: true
+		var Synth = Assembler.assemble({
+			name: 'simple-synth',
+			amp: { node: 'gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
+			filter: { node: 'filter', type: 'lowpass', frequency: 400, connect: 'amp' },
+			osc: { node: 'oscillator', frequency: 880, connect: 'filter' }
 		})
-		var osc = null
+		var synth = null
 
 		nx.onload = function () {
 			toggle1.on('*', function (e) {
 				if (e.value) {
-					osc = Osc(ac)
-					osc.start()
+					synth = Synth(ac)
+					synth.osc.start()
 				} else {
-					osc && osc.stop()
+					synth && synth.osc.stop()
 				}
 			})
 		}
