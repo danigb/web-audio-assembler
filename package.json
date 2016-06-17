@@ -1,7 +1,7 @@
 {
   "name": "web-audio-assembler",
   "version": "0.0.1",
-  "description": "Assemble web audio components",
+  "description": "Assemble web audio nodes",
   "main": "lib/index.js",
   "scripts": {
     "test": "tape test/*.js",

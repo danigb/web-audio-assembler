@@ -6,8 +6,6 @@
 
 The aim of this project is answer the question: how to convert the highly imperative web audio api into something more compatible with a functional programming approach? In fact, the first purpose of this project is to access Web Audio API from Elm lang.
 
-You can see the [Live Examples](https://danigb.github.io/web-audio-assembler) or read the [generated API documentation](https://github.com/danigb/web-audio-assembler/blob/master/API.md)
-
 The idea it's old and popular: instead of use the API, create an object with the description of what you want and let `web-audio-assembler` to do the work.
 
 Requirements:
@@ -17,6 +15,8 @@ Requirements:
 - Connect modules to modules or audio params
 - Update and schedule updates of those node graphs
 - Allow other software (for example, audio user interfaces) to discover properties and capabilities of node graph
+
+You can see the [Live Examples](https://danigb.github.io/web-audio-assembler) or read the [generated API documentation](https://github.com/danigb/web-audio-assembler/blob/master/API.md)
 
 ## How-to
 
