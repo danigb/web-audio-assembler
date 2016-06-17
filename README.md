@@ -12,7 +12,7 @@ Requirements:
 - Update and schedule updates of those node graphs
 - Allow other software (for example, audio user interfaces) to discover properties and capabilities of node graph
 
-You can see the [Live Examples](https://danigb.github.io/web-audio-assembler)
+You can see the [Live Examples](https://danigb.github.io/web-audio-assembler) or read the [generated API documentation](https://github.com/danigb/web-audio-assembler/blob/master/API.md)
 
 ## How-to
 

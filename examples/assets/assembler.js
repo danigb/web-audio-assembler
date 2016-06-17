@@ -1,9 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict'
 var get = require('object-path-get')
-var isNum = require('hi-typeof')('number')
-
-var Assembler = { assemble: assemble, schedule: schedule }
+var is = require('hi-typeof')
+var isNum = is('number')
+var isFn = is('function')
 
 /**
  * Assemble a node or node graph object
@@ -12,8 +12,8 @@ var Assembler = { assemble: assemble, schedule: schedule }
  */
 function assemble (obj) {
   return function (ac) {
-    var n = node(ac, obj) || Object.keys(obj).reduce(function (n, k) {
-      n[k] = node(ac, obj[k])
+    var n = buildNode(ac, obj) || Object.keys(obj).reduce(function (n, k) {
+      n[k] = buildNode(ac, obj[k])
       return n
     }, {})
     makeConnections(ac, n, obj, n)
@@ -21,6 +21,12 @@ function assemble (obj) {
   }
 }
 
+/**
+ * Schedule update events
+ * @param {AudioNode|Object} graph - the node or node graph to schedule to
+ * @param {Float} when - the time to start the schedule
+ * @param {Array} events - the list of events
+ */
 function schedule (graph, time, events) {
   events.forEach(function (event) {
     var path = event.target.split('.')
@@ -35,6 +41,46 @@ function schedule (graph, time, events) {
       node[event.trigger]()
     }
   })
+}
+
+/**
+ * Start a node or graph
+ * @function start
+ * @param {AudioNode|Object} graph - the node or graph of nodes
+ * @param {Float} when - when to stop the nodes
+ */
+var start = map(pluckFn('start'))
+
+/**
+ * Stop a node or graph of nodes
+ * @function stop
+ * @param {AudioNode|Object} graph - the node or graph of nodes
+ * @param {Float} when - when to stop the nodes
+ */
+var stop = map(pluckFn('stop'))
+
+/**
+ * Disconnect a node or graph of nodes
+ * @param {AudioNode|Object} graph - the node or graph of nodes
+ * @param {Float} when - when to stop the nodes
+ */
+var disconnect = map(pluckFn('disconnect'))
+
+var Assembler = { assemble: assemble, schedule: schedule,
+  start: start, stop: stop, disconnect: disconnect }
+
+function map (fn) {
+  return function (graph, ctx) {
+    return [fn(graph, ctx)].concat(Object.keys(graph).map(function (k) {
+      return fn(graph[k], ctx)
+    }))
+  }
+}
+
+function pluckFn (name) {
+  return function (obj, ctx) {
+    if (isFn(obj[name])) obj[name](ctx)
+  }
 }
 
 function oneOf (list) {
@@ -91,7 +137,7 @@ function makeConnections (ac, node, obj, ctx) {
   }
 }
 
-function node (ac, obj) {
+function buildNode (ac, obj) {
   var desc = DESCRIPTORS[obj.node]
   if (!desc) return null
   var constructor = ac['create' + obj.node]

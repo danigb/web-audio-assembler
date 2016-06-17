@@ -19,7 +19,6 @@
   <script type="text/javascript" src="assets/assembler.js"></script>
   <script>
 		var Synth = Assembler.assemble({
-			name: 'simple-synth',
 			amp: { node: 'Gain', gain: 0.4, connect: '$context' },
 			vca: { node: 'Gain', connect: 'amp', gain: 1 },
 			lfo: { node: 'Oscillator', frequency: 4, connect: 'vca.gain' },
@@ -29,20 +28,19 @@
 
 		nx.onload = function () {
 			var notes = {}
-			var current
+			var synth
 			var ac = new AudioContext()
 			Synth(ac).lfo.start()
 			keyboard1.on('*', function (e) {
 				if (e.on) {
-					current = notes[e.note] = Synth(ac)
+					synth = notes[e.note] = Synth(ac)
 					var freq = Math.pow(2, (e.note - 69) / 12) * 440
-					current.osc.frequency.value = freq
-					current.lfo.start()
-					current.osc.start()
+					synth.osc.frequency.value = freq
+					Assembler.start(synth)
 				} else {
-					current = notes[e.note]
-					current.osc.stop()
-					current.lfo.stop()
+					synth = notes[e.note]
+					Assembler.stop(synth)
+					Assembler.disconnect(synth)
 				}
 			})
 		}
