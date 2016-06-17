@@ -8,20 +8,12 @@
 <body>
   <div class="main">
     <h3>Web Audio Assembler Examples</h3>
-    <h1>2. Create simple synth</h1>
+    <h1>3. Use schedule to change notes</h1>
 
 		<pre><code>
-var ac = new AudioContext()
-var Synth = Assembler.assemble({
-	name: 'simple-synth',
-	amp: { node: 'Gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
-	filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
-	osc: { node: 'Oscillator', connect: 'filter' }
-})
-Synth(ac).osc.start()
 		</code></pre>
 
-		<canvas nx="toggle"></canvas>
+		<canvas nx="keyboard"></canvas>
   </div>
   <script type="text/javascript" src="assets/nexusUI.js"></script>
   <script type="text/javascript" src="assets/assembler.js"></script>
@@ -33,15 +25,21 @@ Synth(ac).osc.start()
 			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
 			osc: { node: 'Oscillator', frequency: 880, connect: 'filter' }
 		})
-		var synth = null
 
 		nx.onload = function () {
-			toggle1.on('*', function (e) {
-				if (e.value) {
-					synth = Synth(ac)
-					synth.osc.start()
+			var notes = {}
+			var current
+			keyboard1.on('*', function (e) {
+				if (e.on) {
+					current = notes[e.note] = Synth(ac)
+					var freq = Math.pow(2, (e.note - 69) / 12) * 440
+					Assembler.schedule(current, ac.currentTime,
+						[	{ target: 'osc.frequency', value: freq },
+							{ target: 'osc', trigger: 'start' }])
 				} else {
-					synth && synth.osc.stop()
+					current = notes[e.note]
+					Assembler.schedule(current, ac.currentTime,
+						[{ target: 'osc', trigger: 'stop' }])
 				}
 			})
 		}

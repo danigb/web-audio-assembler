@@ -17,40 +17,43 @@ You can see the [Live Examples](https://danigb.github.io/web-audio-assembler)
 The idea it's old and popular: instead of use the API, create an object with the description of what you want and let web-audio-assembler to do the work.
 
 
-### Create audio nodes
+### Assemble audio nodes
 
 **Create simple nodes**
 
 ```js
 var ac = new AudioContext()
-var waas = require('web-audio-assembler')
+var Assembler = require('web-audio-assembler')
 
-var Osc = waas.assemble({
+var Osc = Assembler.assemble({
   node: 'oscillator',
   type: 'sine',
-  frequency: 400
+  frequency: 400,
+  connect: '$context'
 })
-Osc(ac).start()
+var osc = Osc(ac)
+osc.start()
 ```
 
 **Create more complex node graphs**
 
 ```js
-var Synth = waas.assemble({
+var Synth = Assembler.assemble({
   name: 'microsynth',
   amp: {
-    node: 'gain'
+    node: 'gain',
+    connect: '$context'
   },
   filter: {
     node: 'filter',
     type: 'lowpass',
     frequency: '500',
-    connectTo: 'amp'
+    connect: 'amp'
   },
   osc: {
     node: 'oscillator',
     type: 'sine'
-    connectTo: 'filter'
+    connect: 'filter'
   }
 })
 var synth = Synth(ac)
@@ -61,9 +64,10 @@ synth.osc.start(ac.currentTime)
 ### Schedule updates
 
 ```js
-waas.schedule(synth, [
-  { type: 'start', name: 'osc', time: 0 },
-  { type: 'value', name: 'filter.frequency', value: 400, time: 1 }
+Assembler.schedule(synth, [
+  { target: 'filter.frequency', value: 400, time: 0 },
+  { target: 'osc', trigger: 'start', time: 0 },
+  { target: 'filter.frequency', value: 400, time: 1 }
 ])
 ```
 
