@@ -1,4 +1,3 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict'
 var get = require('object-path-get')
 var is = require('hi-typeof')
@@ -175,34 +174,3 @@ function buildNode (ac, obj) {
 
 if (typeof module === 'object' && module.exports) module.exports = Assembler
 if (typeof window !== 'undefined') window.Assembler = Assembler
-
-},{"hi-typeof":2,"object-path-get":3}],2:[function(require,module,exports){
-'use strict'
-
-module.exports = function (t, r) {
-  var b = r === false
-  return function (o) { return (typeof o === t) !== b }
-}
-
-},{}],3:[function(require,module,exports){
-'use strict';
-
-module.exports = exports = function (obj, path, defaultValue, delimiter) {
-	var arr;
-	var i;
-	if (typeof path === 'string') {
-		arr = path.split(delimiter || '.');
-		for (i = 0; i < arr.length; i++) {
-			if (obj && (obj.hasOwnProperty(arr[i]) || obj[arr[i]])) {
-				obj = obj[arr[i]];
-			} else {
-				return defaultValue;
-			}
-		}
-		return obj;
-	} else {
-		return defaultValue;
-	}
-};
-
-},{}]},{},[1]);

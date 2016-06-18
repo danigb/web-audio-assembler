@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Modulation - Web Audio Assembler</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="initial-scale=1., user-scalable=no, width=device-width"/></head>
+  <link rel="stylesheet" href="assets/ss.css"/>
+<body>
+  <div class="main">
+    <h3>Web Audio Assembler Examples</h3>
+    <h1>5. Vibrato</h1>
+
+		<pre><code>
+		</code></pre>
+
+		<canvas nx="keyboard"></canvas>
+  </div>
+  <script type="text/javascript" src="assets/nexusUI.js"></script>
+  <script type="text/javascript" src="assets/assembler.js"></script>
+  <script>
+		var voice = {
+			amp: { node: 'Gain', gain: 0.4, connect: '$context' },
+			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
+			osc: { node: 'Oscillator', type: 'sawtooth', frequency: 880, connect: 'filter' },
+			freq: { node: 'NoteFrequency', connect: 'osc'}
+		}
+
+		var Synth = Assembler.assemble({
+			amp: { node: 'Gain', gain: 0.8, connect: '$context' },
+			voice1: { graph: voice, connect: 'amp' }
+			voice2: { graph: voice, connect: 'amp' }
+			lfoGain: { node: 'Gain', gain: 10, connect: ['voice1.osc.frequency', 'voice2.osc.frequency' },
+			lfo: { node: 'Oscillator', frequency: 4, connect: 'lfoGain' },
+		})
+
+		nx.onload = function () {
+			var notes = {}
+			var synth
+			var ac = new AudioContext()
+			Synth(ac).lfo.start()
+			keyboard1.on('*', function (e) {
+				if (e.on) {
+					synth = notes[e.note] = Synth(ac)
+					var freq = Math.pow(2, (e.note - 69) / 12) * 440
+					synth.osc.frequency.value = freq
+					Assembler.start(synth)
+				} else {
+					synth = notes[e.note]
+					Assembler.stop(synth)
+					Assembler.disconnect(synth)
+					delete notes[e.note]
+				}
+			})
+		}
+  </script>
+</body>
+</html>

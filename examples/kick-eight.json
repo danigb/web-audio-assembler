@@ -1,0 +1,12 @@
+{
+  "gain": { "node": "Gain", "connect": "$context" },
+  "choke": { "node": "EnvelopeGain", "attack": 0.01, "decay": 0,
+    "duration": 0.01, "sustain": 1, "release": 0.1 },
+  "osc": { "node": "Oscillator", "frequency": 54, "connect": "oscGain" },
+  "oscGain": { "node": "Gain", "connect": "choke" },
+
+  "noise": { "node": "Noise", "duration": 1, "loop": "true"},
+  "noiseGain": { "node": "Gain", "connect": "choke" },
+  "noiseFilter": { "node": "BiquadFilter", "connect": "noiseGain",
+    "type": "bandpass", "frequency": 2760, "Q": 20},
+}
