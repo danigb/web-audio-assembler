@@ -29,12 +29,10 @@
   },
   "homepage": "https://github.com/danigb/web-audio-assembler#readme",
   "devDependencies": {
-    "adsr-envelope": "^1.0.0",
     "tape": "^4.5.1",
     "web-audio-test-api": "^0.5.2"
   },
   "dependencies": {
-    "flat": "^2.0.0",
     "hi-typeof": "^1.0.0",
     "map-values": "^1.0.1",
     "object-path-get": "0.0.3"
