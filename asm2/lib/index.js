@@ -18,8 +18,10 @@ function assembler (desc) {
 function assemble (ac, desc) {
   var node
   node = build(ac, desc)
-  node = properties(node, desc)
-  node = connect(node, desc)
+  apply(setProperties, node, desc)
+  apply(setConnection, node, desc)
+  // node = properties(node, desc)
+  // node = connect(node, desc)
   return node
 }
 
@@ -29,6 +31,18 @@ function build (ac, desc) {
   return isStr(factory) ? createNode(ac, factory)
     : isObj(factory) ? mapValues(factory, function (v) { return build(ac, v) })
     : null
+}
+
+function apply (fn, node, desc, parent) {
+  var factory = desc[0]
+  var props = desc[1] || E
+  if (hasChildren(desc)) {
+    Object.keys(factory).forEach(function (k) {
+      properties(fn, node[k], get(factory, k), node)
+    })
+  }
+  fn(node, props, parent)
+  return node
 }
 
 function properties (node, desc, parent) {
