@@ -30,3 +30,12 @@ test('connect a node in a sub-context', function (t) {
   t.equal(inputs[0].name, 'OscillatorNode')
   t.end()
 })
+
+test('connect node to destination', function (t) {
+  var ac = new AudioContext()
+  var gain = assembler(['Gain', { connect: 'destination' }])(ac)
+  var inputs = ac.toJSON().inputs
+  t.equal(inputs.length, 1)
+  t.deepEqual(inputs[0], gain.toJSON())
+  t.end()
+})
