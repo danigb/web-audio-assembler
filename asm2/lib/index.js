@@ -38,7 +38,7 @@ function apply (fn, node, desc, parent) {
   var props = desc[1] || E
   if (hasChildren(desc)) {
     Object.keys(factory).forEach(function (k) {
-      properties(fn, node[k], get(factory, k), node)
+      apply(fn, node[k], get(factory, k), node)
     })
   }
   fn(node, props, parent)
@@ -86,7 +86,6 @@ function setProperties (node, props) {
 }
 
 function hasChildren (desc) { return desc[0] && isObj(desc[0]) }
-
 
 function createNode (ac, name) {
   var cons = 'create' + name
