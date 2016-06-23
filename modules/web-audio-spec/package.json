@@ -1,0 +1,24 @@
+{
+  "name": "web-audio-spec",
+  "version": "0.0.1",
+  "description": "Describe audio nodes",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/*.js"
+  },
+  "keywords": [
+    "web",
+    "audio",
+    "api",
+    "audio",
+    "spec"
+  ],
+  "author": "danigb",
+  "license": "MIT",
+  "devDependencies": {
+    "tape": "^4.6.0"
+  },
+  "dependencies": {
+    "hi-typeof": "^1.0.0"
+  }
+}
