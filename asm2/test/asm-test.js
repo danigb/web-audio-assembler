@@ -39,12 +39,14 @@ test('set properties to a graph', function (t) {
   t.end()
 })
 
-test('connect a graph', function (t) {
+test('connect a node in a graph', function (t) {
   var ac = new AudioContext()
   var nodes = assembler([{
     out: ['Gain'],
     osc: ['Oscillator', { connect: 'out' }] }])(ac)
   t.assert(nodes)
-  console.log(nodes.out['$inputs'])
+  var inputs = nodes.out.toJSON().inputs
+  t.equal(inputs.length, 1)
+  t.equal(inputs[0].name, 'OscillatorNode')
   t.end()
 })

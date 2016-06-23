@@ -5,48 +5,74 @@ var mapValues = require('map-values')
 var isArr = Array.isArray
 var isStr = is('string')
 var isObj = is('object')
+var E = {}
 
 function assembler (desc) {
-  if (!desc) return null
+  if (!isArr(desc)) desc = [desc]
   return function (ac) {
-    var node = assemble(ac, {}, desc)
+    var node = assemble(ac, desc)
     return node
   }
 }
 
-function assemble (ac, ctx, desc, props) {
-  if (isArr(desc)) return assemble(ac, ctx, desc[0], desc[1])
+function assemble (ac, desc) {
   var node
-  if (isStr(desc)) {
-    node = createNode(ac, desc)
-  } else if (isObj(desc)) {
-    node = mapValues(desc, function (v) {
-      return assemble(ac, ctx, v)
+  node = build(ac, desc)
+  node = properties(node, desc)
+  node = connect(node, desc)
+  return node
+}
+
+function build (ac, desc) {
+  var factory = desc[0]
+
+  return isStr(factory) ? createNode(ac, factory)
+    : isObj(factory) ? mapValues(factory, function (v) { return build(ac, v) })
+    : null
+}
+
+function properties (node, desc, parent) {
+  var factory = desc[0]
+  var props = desc[1] || E
+  if (hasChildren(desc)) {
+    Object.keys(factory).forEach(function (k) {
+      properties(node[k], get(factory, k), node)
     })
   }
-  node = properties(node, props)
-  node = connect(ctx, node, props)
+  setProperties(node, props, parent)
   return node
 }
 
-function connect (ctx, node, props) {
-  if (props && props.connect) {
-    var target = get(ctx, props.connect)
-    console.log("CONNECT", props.connect, target)
+function connect (node, desc, parent) {
+  var factory = desc[0]
+  var props = desc[1] || E
+  if (hasChildren(desc)) {
+    Object.keys(factory).forEach(function (k) {
+      connect(node[k], get(factory, k), node)
+    })
   }
+  setConnection(node, props, parent)
   return node
 }
 
-function properties (node, props) {
-  if (!props) return node
+function setConnection (node, props, parent) {
+  var connect = props ? props.connect : null
+  if (!connect) return
+  var target = parent ? get(parent, connect) : null
+  if (target && node.connect) node.connect(target)
+}
+
+function setProperties (node, props) {
   Object.keys(props).forEach(function (k) {
     var target = get(node, k)
     var value = props[k]
     if (!target || !value) return
     else if (target.value) target.value = value
   })
-  return node
 }
+
+function hasChildren (desc) { return desc[0] && isObj(desc[0]) }
+
 
 function createNode (ac, name) {
   var cons = 'create' + name
