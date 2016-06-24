@@ -27,3 +27,16 @@ test('export connect to a node', function (t) {
   t.deepEqual(inputs[0], gain.toJSON())
   t.end()
 })
+
+test('export a param', function (t) {
+  var ac = new AudioContext()
+  var nodes = assembler({
+    osc: ['Oscillator', { frequency: '$freq' }]
+  })(ac)
+  t.assert(nodes)
+  t.assert(nodes.freq)
+  t.equal(nodes.osc.frequency.value, 440)
+  nodes.freq.value = 1000
+  t.equal(nodes.osc.frequency.value, 1000)
+  t.end()
+})
