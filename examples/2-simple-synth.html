@@ -12,11 +12,10 @@
 
 		<pre><code>
 var ac = new AudioContext()
-var Synth = Assembler.assemble({
-	name: 'simple-synth',
-	amp: { node: 'Gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
-	filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
-	osc: { node: 'Oscillator', connect: 'filter' }
+var Synth = Assembler({
+	amp: ['Gain', { type: 'sawtooth', gain: 0.4, connect: 'destination' }],
+	filter: ['BiquadFilter', { type: 'lowpass', frequency: 400, connect: 'amp' }],
+	osc: [ 'Oscillator', { type: 'square', frequency: 700, connect: 'filter' }]
 })
 Synth(ac).osc.start()
 		</code></pre>
@@ -27,11 +26,10 @@ Synth(ac).osc.start()
   <script type="text/javascript" src="assets/assembler.js"></script>
   <script>
 		var ac = new AudioContext()
-		var Synth = Assembler.assemble({
-			name: 'simple-synth',
-			amp: { node: 'Gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
-			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
-			osc: { node: 'Oscillator', frequency: 880, connect: 'filter' }
+		var Synth = Assembler({
+			amp: ['Gain', { type: 'sawtooth', gain: 0.4, connect: 'destination' }],
+			filter: ['BiquadFilter', { type: 'lowpass', frequency: 400, connect: 'amp' }],
+			osc: [ 'Oscillator', { type: 'square', frequency: 700, connect: 'filter' }]
 		})
 		var synth = null
 

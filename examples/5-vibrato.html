@@ -11,7 +11,7 @@
     <h1>5. Vibrato</h1>
 
 		<pre><code>
-var Synth = Assembler.assemble({
+var Synth = Assembler({
 	amp: { node: 'Gain', gain: 0.4, connect: '$context' },
 	filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
 	osc: { node: 'Oscillator', type: 'sawtooth', frequency: 880, connect: 'filter' },
@@ -26,7 +26,7 @@ Assembler.start(Synth(new AudioContext()))
   <script type="text/javascript" src="assets/nexusUI.js"></script>
   <script type="text/javascript" src="assets/assembler.js"></script>
   <script>
-		var Synth = Assembler.assemble({
+		var Synth = Assembler({
 			amp: { node: 'Gain', gain: 0.4, connect: '$context' },
 			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
 			osc: { node: 'Oscillator', type: 'sawtooth', frequency: 880, connect: 'filter' },

@@ -12,10 +12,7 @@
 
 		<pre><code>
 var ac = new AudioContext()
-var Osc = Assembler.assemble({
-	node: 'Oscillator',
-	connect: true
-})
+var Osc = Assembler(['Oscillator', { connect: 'destination' })
 var osc = Osc(ac)
 osc.start()
 		</code></pre>
@@ -26,10 +23,7 @@ osc.start()
   <script type="text/javascript" src="assets/assembler.js"></script>
   <script>
 		var ac = new AudioContext()
-		var Osc = Assembler.assemble({
-			node: 'Oscillator',
-			connect: true
-		})
+		var Osc = Assembler(['Oscillator', { connect: 'destination' }])
 		var osc = null
 
 		nx.onload = function () {

@@ -27,7 +27,7 @@
 			freq: { node: 'NoteFrequency', connect: 'osc'}
 		}
 
-		var Synth = Assembler.assemble({
+		var Synth = Assembler({
 			amp: { node: 'Gain', gain: 0.8, connect: '$context' },
 			voice1: { graph: voice, connect: 'amp' }
 			voice2: { graph: voice, connect: 'amp' }

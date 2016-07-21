@@ -11,7 +11,7 @@
     <h1>3. Use schedule to change notes</h1>
 
 		<pre><code>
-		var Synth = Assembler.assemble({
+		var Synth = Assembler({
 			amp: { node: 'Gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
 			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
 			osc: { node: 'Oscillator', frequency: 880, connect: 'filter' }
@@ -27,7 +27,7 @@
   <script type="text/javascript" src="assets/assembler.js"></script>
   <script>
 		var ac = new AudioContext()
-		var Synth = Assembler.assemble({
+		var Synth = Assembler({
 			amp: { node: 'Gain', type: 'sawtooth', gain: 0.2, connect: '$context' },
 			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'amp' },
 			osc: { node: 'Oscillator', frequency: 880, connect: 'filter' }
@@ -38,7 +38,7 @@
 			var current
 			keyboard1.on('*', function (e) {
 				if (e.on) {
-					current = notes[e.note] = Synth(ac)
+					current = notes[e.note] = Synth(ac).connect(ac.destination)
 					var freq = Math.pow(2, (e.note - 69) / 12) * 440
 					Assembler.schedule(current, ac.currentTime,
 						[	{ target: 'osc.frequency', value: freq },

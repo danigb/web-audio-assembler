@@ -1,182 +1,189 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-'use strict'
 var get = require('object-path-get')
-var is = require('hi-typeof')
 
-// Utility
-var isNum = is('number')
-var isFn = is('function')
-
-/**
- * Assemble a node or node graph object
- * @param {Object} obj - the node or node graph description
- * @param {AudioContext} ac - (Optional) the audio context
- * @return {Function|AudioNode} a function that creates the node or node graph
- * or the node graph if AudioContext is provided
- * @example
- * var Assembler = require('web-audio-assembler')
- * // create a node generator function
- * var osc = Assembler.assemble({ node: 'Oscillator' })
- * var ac = new AudioContext()
- * osc(ac).start()
- * // create the node directly
- * Assembler.assemble({ node: 'Oscillator', frequency: 880 }, ac).start()
- */
-function assemble (desc, ac) {
-  if (arguments.length > 1) return assemble(desc)(ac)
-
-  return function (ac) {
-    var n = buildNode(ac, desc) || Object.keys(desc).reduce(function (n, k) {
-      n[k] = buildNode(ac, desc[k])
-      return n
-    }, {})
-    makeConnections(ac, n, desc, n)
-    return n
-  }
+module.exports = function (node, desc, props, parent) {
+  var connect = props ? props.connect : null
+  if (!connect) return
+  var target = get(parent, connect)
+  if (!target && connect === 'destination') target = node.context.destination
+  if (target && node.connect) node.connect(target)
 }
 
-/**
- * Schedule update events.
- *
- * @param {AudioNode|Object} graph - the node or node graph to schedule to
- * @param {Float} when - the time to start the schedule
- * @param {Array} events - the list of events
- * @example
- * Assembler.schedule(graph, ac.currentTime, [
- *	{ target: 'osc.frequency', value: 440, time: 0 },
- *  { target: 'osc', trigger: 'start', time: 0 },
- *	{ target: 'osc.frequency', value: 880, time: 0.5 },
- *  { target: 'osc', trigger: 'stop', time: 1 }
- * ])
- */
-function schedule (graph, time, events) {
-  events.forEach(function (event) {
-    var path = event.target.split('.')
-    var node = graph[path[0]]
-    var name = node.constructor.name.slice(0, -4)
-    var desc = DESCRIPTORS[name]
-    if (event.value) {
-      var target = desc[path[1]]
-      if (!target) throw Error('Target: ' + event.target + ' not found.')
-      TYPES[target](node, path[1], event.value)
-    } else if (event.trigger) {
-      node[event.trigger]()
-    }
+},{"object-path-get":8}],2:[function(require,module,exports){
+var is = require('hi-typeof')
+var isStr = is('string')
+
+module.exports = function (node, nodeDesc, props, parent) {
+  Object.keys(props).forEach(function (key) {
+    var value = props[key]
+    if (!isExport(value)) return
+    if (key === 'connect') exportConnection(node, parent)
+    else exportKey(node, parent, key, value)
   })
 }
 
-/**
- * Start a node or graph
- * @function start
- * @param {AudioNode|Object} graph - the node or graph of nodes
- * @param {Float} when - when to stop the nodes
- */
-var start = map(callFn('start'))
+function exportKey (node, parent, key, value) {
+  parent = parent || node
+  parent[value.slice(1)] = node[key]
+}
 
-/**
- * Stop a node or graph of nodes
- * @function stop
- * @param {AudioNode|Object} graph - the node or graph of nodes
- * @param {Float} when - when to stop the nodes
- */
-var stop = map(callFn('stop'))
-
-/**
- * Disconnect a node or graph of nodes
- * @function disconnect
- * @param {AudioNode|Object} graph - the node or graph of nodes
- * @param {Float} when - when to stop the nodes
- */
-var disconnect = map(callFn('disconnect'))
-
-var Assembler = { assemble: assemble, schedule: schedule,
-  start: start, stop: stop, disconnect: disconnect }
-
-function map (fn) {
-  return function (graph, ctx, key) {
-    return [fn(graph, ctx)].concat(Object.keys(graph).map(function (k) {
-      return fn(graph[k], ctx, k)
-    }))
+function exportConnection (node, parent) {
+  if (!node.connect) return
+  var _connect = node.connect
+  parent = parent || node
+  parent.connect = function (dest) {
+    _connect.call(node, dest)
+    return parent
   }
 }
 
-function callFn (name) {
-  return function (obj, ctx) {
-    if (isFn(obj[name])) obj[name](ctx)
+function isExport (value) {
+  return isStr(value) && value[0] === '$'
+}
+
+},{"hi-typeof":6}],3:[function(require,module,exports){
+var is = require('hi-typeof')
+var get = require('object-path-get')
+var mapValues = require('map-values')
+
+var isArr = Array.isArray
+var isObj = is('object')
+var isStr = is('string')
+var E = {}
+
+var plugins = [
+  require('./properties'),
+  require('./connect'),
+  require('./exports')
+]
+
+function descNode (desc) { return isArr(desc) ? desc[0] : desc }
+function descProps (desc) { return isArr(desc) && desc[1] ? desc[1] : E }
+
+function assembler (desc) {
+  return function (ac) {
+    var node = assemble(ac, desc)
+    return node
   }
 }
 
-function oneOf (list) {
-  return function (node, name, value) {
-    if (list.indexOf(value) === -1) {
-      throw Error('Not valid "' + name + '" value: ' + value)
-    }
-    node[name] = value
-  }
-}
-
-var TYPES = {
-  'a-rate': function (node, name, value) {
-    if (!isNum(value)) throw Error('An a-rate value must be a number, but was: ' + value)
-    node[name].value = value
-  },
-  'oscillator-type': oneOf(['sine', 'square', 'sawtooth', 'triangle', 'custom']),
-  'filter-type': oneOf(['lowpass', 'highpass', 'bandpass', 'lowshelf', 'highshelf', 'peaking', 'notch', 'allpass'])
-}
-
-var DESCRIPTORS = {
-  Gain: {
-    gain: 'a-rate'
-  },
-  Oscillator: {
-    frequency: 'a-rate',
-    detune: 'a-rate',
-    type: 'oscillator-type'
-  },
-  BiquadFilter: {
-    frequency: 'a-rate',
-    detune: 'a-rate',
-    Q: 'a-rate',
-    gain: 'a-rate',
-    type: 'filter-type'
-  },
-  Delay: {
-    delayTime: 'a-rate'
-  }
-}
-
-function makeConnections (ac, node, obj, ctx) {
-  if (!node) return
-  if (obj.connect) {
-    if (obj.connect === '$context') return node.connect(ac.destination)
-    else {
-      var dest = get(ctx, obj.connect)
-      if (dest) return node.connect(dest)
-    }
-  } else {
-    Object.keys(node).forEach(function (k) {
-      makeConnections(ac, node[k], obj[k], ctx)
-    })
-  }
-}
-
-function buildNode (ac, obj) {
-  var desc = DESCRIPTORS[obj.node]
-  if (!desc) return null
-  var constructor = ac['create' + obj.node]
-  var param = obj.node === 'Delay' ? (obj.maxDelay || 1) : void 0
-  var node = constructor.call(ac, param)
-  Object.keys(obj).forEach(function (k) {
-    var setValue = TYPES[desc[k]]
-    if (setValue) setValue(node, k, obj[k])
+function assemble (ac, desc) {
+  var node
+  node = build(ac, desc)
+  plugins.forEach(function (plugin) {
+    apply(plugin, node, desc)
   })
   return node
 }
 
-if (typeof module === 'object' && module.exports) module.exports = Assembler
-if (typeof window !== 'undefined') window.Assembler = Assembler
+function build (ac, desc) {
+  var factory = descNode(desc)
 
-},{"hi-typeof":2,"object-path-get":3}],2:[function(require,module,exports){
+  return isStr(factory) ? createNode(ac, factory)
+    : isObj(factory) ? mapValues(factory, function (v) { return build(ac, v) })
+    : null
+}
+
+function apply (fn, node, desc, parent) {
+  var factory = descNode(desc)
+  var props = descProps(desc)
+  if (isObj(factory)) {
+    Object.keys(factory).forEach(function (k) {
+      apply(fn, node[k], get(factory, k), node)
+    })
+  }
+  fn(node, factory, props, parent)
+  return node
+}
+
+function createNode (ac, name) {
+  var cons = 'create' + name
+  return ac[cons]()
+}
+
+if (typeof module === 'object' && module.exports) module.exports = assembler
+if (typeof window !== 'undefined') window.Assembler = assembler
+
+},{"./connect":1,"./exports":2,"./properties":5,"hi-typeof":6,"map-values":7,"object-path-get":8}],4:[function(require,module,exports){
+
+function explain (name) {
+  return NODES[name]
+}
+
+module.exports = { explain: explain }
+
+var NODES = {
+  GainNode: {
+    gain: 'gain'
+  },
+  OscillatorNode: {
+    detune: 'detune',
+    frequency: 'frequency',
+    type: 'oscillator-type',
+    start: 'start',
+    stop: 'stop',
+    onended: 'onended'
+  },
+  BiquadFilterNode: {
+    frequency: 'frequency',
+    detune: 'detune',
+    Q: 'q',
+    gain: 'gain',
+    type: 'filter-type'
+  },
+  DelayNode: {
+    delayTime: 'delay-time'
+  },
+  ConvolverNode: {
+    buffer: 'buffer',
+    normalize: 'boolean'
+  }
+}
+
+},{}],5:[function(require,module,exports){
+var is = require('hi-typeof')
+var nodes = require('./nodes')
+var get = require('object-path-get')
+
+var isStr = is('string')
+var isNum = is('number')
+var isDef = is('undefined', false)
+
+module.exports = function (node, nodeDesc, props, parent) {
+  if (isStr(nodeDesc)) {
+    var spec = nodes.explain(nodeDesc + 'Node')
+    if (spec) setNodeProperties(node, spec, props)
+  } else {
+    Object.keys(props).forEach(function (k) {
+      var ndx = k.lastIndexOf('.')
+      var location = k.slice(0, ndx)
+      var prop = k.slice(ndx + 1)
+      var target = get(node, location)
+      var def = get(nodeDesc, location)[0]
+      var value = props[k]
+      setNodeProperty(target, prop, value, def)
+    })
+  }
+}
+
+function setNodeProperty (node, name, value, def) {
+  if (!node[name]) return
+  if (isDef(node[name].value)) node[name].value = value
+  else node[name] = value
+}
+
+function setNodeProperties (node, spec, props) {
+  Object.keys(spec).forEach(function (k) {
+    var target = node[k]
+    var value = props[k]
+    if (!target || !value) return
+    else if (isDef(target.value)) {
+      if (isNum(value)) target.value = value
+    } else if (node[k]) node[k] = value
+  })
+}
+
+},{"./nodes":4,"hi-typeof":6,"object-path-get":8}],6:[function(require,module,exports){
 'use strict'
 
 module.exports = function (t, r) {
@@ -184,7 +191,22 @@ module.exports = function (t, r) {
   return function (o) { return (typeof o === t) !== b }
 }
 
-},{}],3:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
+"use strict";
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+module.exports = function(obj, map) {
+	var result = {};
+	for (var key in obj) {
+		if (hasOwnProperty.call(obj, key)) {
+			result[key] = map(obj[key], key, obj);
+		}
+	}
+	return result;
+};
+
+},{}],8:[function(require,module,exports){
 'use strict';
 
 module.exports = exports = function (obj, path, defaultValue, delimiter) {
@@ -205,4 +227,4 @@ module.exports = exports = function (obj, path, defaultValue, delimiter) {
 	}
 };
 
-},{}]},{},[1]);
+},{}]},{},[3]);

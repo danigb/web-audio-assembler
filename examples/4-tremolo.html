@@ -18,12 +18,18 @@
   <script type="text/javascript" src="assets/nexusUI.js"></script>
   <script type="text/javascript" src="assets/assembler.js"></script>
   <script>
-		var Synth = Assembler.assemble({
-			amp: { node: 'Gain', gain: 0.4, connect: '$context' },
-			vca: { node: 'Gain', connect: 'amp', gain: 1 },
-			lfo: { node: 'Oscillator', frequency: 4, connect: 'vca.gain' },
-			filter: { node: 'BiquadFilter', type: 'lowpass', frequency: 400, connect: 'vca' },
-			osc: { node: 'Oscillator', type: 'sawtooth', frequency: 880, connect: 'filter' },
+		var tremolo = {
+			vca: ['Gain', { connect: 'destination' }],
+			lfo: ['Oscillator', { frequency: 4, connect: 'vca.gain' }]
+		}
+		var synth = {
+			amp: ['Gain', { gain: 0.4, connect: 'destination' }],
+			filter: ['BiquadFilter', { type: 'lowpass', frequency: 400, connect: 'vca' }],
+			osc: ['Oscillator', { type: 'sawtooth', frequency: 880, connect: 'filter' }]
+		}
+		var Synth = Assembler({
+			[ tremolo, { connect: 'destination' } ],
+			[ synth, { connect: 'tremolo.vca' }]
 		})
 
 		nx.onload = function () {
